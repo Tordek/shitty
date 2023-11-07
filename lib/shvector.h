@@ -13,82 +13,143 @@ namespace shitty
         Node<T> *prev;
     };
 
+    /// @brief A shitty implementation for a Vector.
+    /// @details It needs contiguous memory like a Vector but it traverses like a Linked List.
+    /// @tparam T
+    /// @tparam Allocator
     template <typename T, class Allocator = std::allocator<Node<T>>>
     class shvector
     {
     public:
         typedef Allocator allocator_type;
-        typedef std::allocator_traits<Allocator>::pointer pointer;
+        typedef std::size_t size_type;
 
     private:
-        Node<T> *nodes; // Contiguous memory for nodes
-        size_t count;
-        size_t capacity;
+        Node<T> *head; // Contiguous memory for nodes
+        size_type count;
 
+        /// @brief Make room for more elements
         void extend_capacity()
         {
             allocator_type alloc;
-            Node<T> *new_nodes = alloc.allocate(capacity + 1);
+            Node<T> *new_head = alloc.allocate(capacity() + 1);
 
             // Copy existing nodes to the new memory block
-            for (size_t i = 0; i < count; ++i)
+            for (size_type i = 0; i < count; ++i)
             {
-                new_nodes[i].value = nodes[i].value;
-                new_nodes[i].next = (i < count - 1) ? &new_nodes[i + 1] : nullptr;
-                new_nodes[i].prev = (i > 0) ? &new_nodes[i - 1] : nullptr;
+                new_head[i].value = head[i].value;
+                new_head[i].next = (i < count - 1) ? &new_head[i + 1] : nullptr;
+                new_head[i].prev = (i > 0) ? &new_head[i - 1] : nullptr;
             }
 
-            alloc.deallocate(nodes, capacity);
+            alloc.deallocate(head, capacity());
 
             // Update the capacity and assign the new memory block
-            capacity++;
-            nodes = new_nodes;
+            head = new_head;
         }
 
+        /// @brief
+        /// @return
+        constexpr size_type capacity() const
+        {
+            Node<T> *node = head;
+            int count(0);
+            while (node != nullptr)
+            {
+                node = node->next;
+                count++;
+            }
+            return count;
+        }
+
+        /// @brief An iterator equivalent to carrying around a reference and an index.
+        class iterator : public std::iterator<std::input_iterator_tag, T>
+        {
+        public:
+            shvector<T, Allocator> *m_parent;
+            size_type m_location;
+
+            iterator(shvector<T, Allocator> *parent, size_type location) : m_parent(parent), m_location(location) {}
+            iterator(const iterator &other) : m_parent(other.m_parent), m_location(other.m_location) {}
+            ~iterator() {}
+            iterator &operator=(const iterator &other)
+            {
+                m_location = other.m_location;
+            }
+            bool operator==(const iterator &other)
+            {
+                return m_location == other.m_location && m_parent == other.m_parent;
+            }
+            void operator++() { m_location++; }
+            T &operator*() { return (*m_parent)[m_location]; }
+        };
+
     public:
-        shvector() : nodes(nullptr), count(0), capacity(0) {}
+        shvector() : head(nullptr), count(0)
+        {
+        }
 
         ~shvector()
         {
             allocator_type alloc;
-            alloc.deallocate(nodes, capacity);
+            alloc.deallocate(head, capacity());
         }
 
+        /// @brief Push a value to the end of the vector, expanding if needed.
+        /// @param value The value to push.
         void push_back(const T &value)
         {
-            if (count == capacity)
+            if (count == capacity())
             {
                 extend_capacity();
             }
 
             // Set the new value
-            nodes[count].value = value;
+            head[count].value = value;
 
             // Update the linked list pointers
-            nodes[count].next = nullptr;
-            nodes[count].prev = count > 0 ? &nodes[count - 1] : nullptr;
+            head[count].next = nullptr;
+            head[count].prev = count > 0 ? &head[count - 1] : nullptr;
             if (count > 0)
             {
-                nodes[count - 1].next = &nodes[count];
+                head[count - 1].next = &head[count];
             }
 
             // Increment the count of elements
             count++;
         }
 
-        T &operator[](size_t index)
+        /// @brief Operator to access a specific index
+        /// @param index The index to access
+        /// @return The value at that index
+        T &operator[](size_type index)
         {
             if (index >= count)
             {
                 throw std::out_of_range("Index out of range");
             }
-            return nodes[index].value;
+            return head[index].value;
         }
 
-        constexpr size_t size() const
+        /// @brief Returns the number of elements in the vector
+        /// @return The number of elements in the vector
+        constexpr size_type size() const
         {
             return count;
         }
-    };
 
+        /// @brief A simple iterator to the start of the vector
+        /// @return 
+        constexpr iterator begin()
+        {
+            return iterator(this, 0);
+        }
+
+        /// @brief Iterator after the end
+        /// @return 
+        constexpr iterator end()
+        {
+            return iterator(this, count);
+        }
+    };
 }

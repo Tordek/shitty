@@ -5,22 +5,22 @@
 
 #include "gtest/gtest.h"
 
-class BasicTests : public testing::Test
+class ShittyVector : public testing::Test
 {
 };
 
-TEST(BasicTests, CanBeCreated)
+TEST(ShittyVector, CanBeCreated)
 {
     shitty::shvector<int> vector;
 }
 
-TEST(BasicTests, AnEmptyVectorHasSizeZero)
+TEST(ShittyVector, AnEmptyVectorHasSizeZero)
 {
     shitty::shvector<int> vector;
     ASSERT_EQ(vector.size(), 0);
 }
 
-TEST(BasicTests, CanPushIntoAVectorAndItGrows)
+TEST(ShittyVector, CanPushIntoAVectorAndItGrows)
 {
     shitty::shvector<int> vector;
     vector.push_back(1);
@@ -31,11 +31,20 @@ TEST(BasicTests, CanPushIntoAVectorAndItGrows)
     ASSERT_EQ(vector.size(), 3);
 }
 
-TEST(BasicTests, CanAccessAnElement)
+TEST(ShittyVector, CanAccessAnElement)
 {
     shitty::shvector<int> vector;
     vector.push_back(1);
     vector.push_back(2);
     vector.push_back(3);
     ASSERT_EQ(vector[1], 2);
+}
+
+TEST(ShittyVector, SimpleIteratorTest)
+{
+    shitty::shvector<int> vector;
+    vector.push_back(1);
+    vector.push_back(2);
+    vector.push_back(3);
+    ASSERT_EQ(*std::find(vector.begin(), vector.end(), 2), 2);
 }
