@@ -26,4 +26,8 @@ Copyright and you deserve to be sued if you use this.
 
 ### Do I need the buizel alias?
 
-No, but you'll make Buizel sad.
+~~No, but~~
+
+#### **YES YOU DO** - Jesse
+
+~~you'll make Buizel sad.~~
